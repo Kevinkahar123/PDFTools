@@ -31,3 +31,26 @@ h1 span{color:var(--accent)}
 footer{border-top:1px solid var(--line);padding:25px 0;color:#697386;font-size:14px}.footer{display:flex;justify-content:space-between;gap:20px}
 @media(max-width:800px){nav{gap:14px;font-size:14px}.tool-grid{grid-template-columns:1fr 1fr}.download-box{flex-direction:column;align-items:flex-start}}
 @media(max-width:560px){.hero{padding:75px 0}.tool-grid{grid-template-columns:1fr}h1{letter-spacing:-2px}.footer{flex-direction:column}}
+.faq-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.faq-list details {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: #fff;
+}
+
+.faq-list summary {
+  cursor: pointer;
+  font-weight: 750;
+  font-size: 17px;
+}
+
+.faq-list details p {
+  color: var(--muted);
+  margin-top: 12px;
+}
