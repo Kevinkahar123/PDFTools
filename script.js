@@ -1,127 +1,102 @@
-document.addEventListener("DOMContentLoaded", () => {
+const { PDFDocument, degrees } = PDFLib;
 
-  const { PDFDocument, degrees } = PDFLib;
+// =====================================================
+// HELPER FUNCTIONS
+// =====================================================
 
-  function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
 
-    a.href = url;
-    a.download = filename;
+  a.href = url;
+  a.download = filename;
 
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
-  function downloadBytes(bytes, filename) {
-    const blob = new Blob([bytes], {
-      type: "application/pdf"
-    });
+function downloadBytes(bytes, filename) {
+  const blob = new Blob([bytes], {
+    type: "application/pdf"
+  });
 
-    downloadBlob(blob, filename);
-  }
+  downloadBlob(blob, filename);
+}
 
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
+function showElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = false;
+}
 
-
-  /* =========================================
-     MERGE PDF
-  ========================================= */
-
-  const mergeFiles =
-    document.getElementById("mergeFiles");
-
-  const mergeBtn =
-    document.getElementById("mergeBtn");
-
-  const mergeArea =
-    document.getElementById("mergeArea");
-
-  const mergeStatus =
-    document.getElementById("mergeStatus");
-
-  const mergeFileList =
-    document.getElementById("mergeFileList");
-
-  const mergePdfBtn =
-    document.getElementById("mergePdfBtn");
-
-  let mergeSelected = [];
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
 
 
+// =====================================================
+// MERGE PDF
+// =====================================================
+
+const mergeFiles = document.getElementById("mergeFiles");
+const mergeBtn = document.getElementById("mergeBtn");
+const mergeArea = document.getElementById("mergeArea");
+const mergeStatus = document.getElementById("mergeStatus");
+const mergeFileList = document.getElementById("mergeFileList");
+const mergePdfBtn = document.getElementById("mergePdfBtn");
+
+let selectedMergeFiles = [];
+
+if (mergeBtn) {
   mergeBtn.addEventListener("click", () => {
     mergeFiles.click();
   });
+}
 
-
+if (mergeFiles) {
   mergeFiles.addEventListener("change", () => {
 
-    mergeSelected = Array.from(mergeFiles.files);
+    selectedMergeFiles = Array.from(mergeFiles.files);
 
-    if (!mergeSelected.length) return;
+    if (selectedMergeFiles.length < 2) {
+      mergeStatus.textContent =
+        "Please select at least 2 PDF files.";
+
+      mergeFileList.innerHTML = "";
+      mergeArea.hidden = false;
+
+      return;
+    }
 
     mergeArea.hidden = false;
 
-    renderMergeFiles();
-  });
-
-
-  function renderMergeFiles() {
+    mergeStatus.textContent =
+      selectedMergeFiles.length + " PDF files selected.";
 
     mergeFileList.innerHTML = "";
 
-    mergeStatus.textContent =
-      `${mergeSelected.length} PDF file(s) selected.`;
-
-
-    mergeSelected.forEach((file, index) => {
+    selectedMergeFiles.forEach((file, index) => {
 
       const div = document.createElement("div");
 
-      div.className = "merge-file-item";
+      div.textContent =
+        (index + 1) + ". " + file.name;
 
-      div.innerHTML = `
-        <span>${index + 1}. ${escapeHtml(file.name)}</span>
-        <button class="remove-file" data-index="${index}">×</button>
-      `;
+      div.style.marginBottom = "6px";
 
       mergeFileList.appendChild(div);
     });
+  });
+}
 
-
-    document.querySelectorAll(".remove-file").forEach(button => {
-
-      button.addEventListener("click", () => {
-
-        mergeSelected.splice(
-          Number(button.dataset.index),
-          1
-        );
-
-        if (!mergeSelected.length) {
-          mergeArea.hidden = true;
-          return;
-        }
-
-        renderMergeFiles();
-      });
-
-    });
-  }
-
-
+if (mergePdfBtn) {
   mergePdfBtn.addEventListener("click", async () => {
 
-    if (mergeSelected.length < 2) {
-      mergeStatus.textContent =
-        "Please select at least 2 PDF files.";
+    if (selectedMergeFiles.length < 2) {
+      alert("Please select at least 2 PDF files.");
       return;
     }
 
@@ -130,139 +105,150 @@ document.addEventListener("DOMContentLoaded", () => {
       mergePdfBtn.disabled = true;
       mergePdfBtn.textContent = "Merging...";
 
-      const mergedPdf =
-        await PDFDocument.create();
+      const mergedPdf = await PDFDocument.create();
 
+      for (const file of selectedMergeFiles) {
 
-      for (let i = 0; i < mergeSelected.length; i++) {
+        const arrayBuffer = await file.arrayBuffer();
 
-        mergeStatus.textContent =
-          `Processing ${i + 1} of ${mergeSelected.length}...`;
+        const pdf = await PDFDocument.load(arrayBuffer);
 
-        const bytes =
-          await mergeSelected[i].arrayBuffer();
-
-        const sourcePdf =
-          await PDFDocument.load(bytes);
-
-        const pages =
-          await mergedPdf.copyPages(
-            sourcePdf,
-            sourcePdf.getPageIndices()
-          );
+        const pages = await mergedPdf.copyPages(
+          pdf,
+          pdf.getPageIndices()
+        );
 
         pages.forEach(page => {
           mergedPdf.addPage(page);
         });
       }
 
-
-      const output =
-        await mergedPdf.save();
+      const mergedBytes = await mergedPdf.save({
+        useObjectStreams: true
+      });
 
       downloadBytes(
-        output,
+        mergedBytes,
         "merged-pdf.pdf"
       );
 
       mergeStatus.textContent =
-        "✓ Merge completed. Download started.";
+        "PDF merged successfully!";
 
     } catch (error) {
 
       console.error(error);
 
-      mergeStatus.textContent =
-        "❌ Unable to merge this PDF.";
+      alert(
+        "Unable to merge PDF files. Please make sure the PDFs are valid."
+      );
 
     } finally {
 
       mergePdfBtn.disabled = false;
-      mergePdfBtn.textContent =
-        "Merge & Download PDF";
+      mergePdfBtn.textContent = "Merge & Download PDF";
+
     }
-
   });
+}
 
 
-  /* =========================================
-     SPLIT PDF
-  ========================================= */
+// =====================================================
+// SPLIT PDF
+// =====================================================
 
-  const splitFile =
-    document.getElementById("splitFile");
+const splitFile = document.getElementById("splitFile");
+const splitBtn = document.getElementById("splitBtn");
+const splitArea = document.getElementById("splitArea");
+const splitStatus = document.getElementById("splitStatus");
+const splitPage = document.getElementById("splitPage");
+const splitPdfBtn = document.getElementById("splitPdfBtn");
 
-  const splitBtn =
-    document.getElementById("splitBtn");
+let selectedSplitFile = null;
 
-  const splitArea =
-    document.getElementById("splitArea");
-
-  const splitStatus =
-    document.getElementById("splitStatus");
-
-  const splitPage =
-    document.getElementById("splitPage");
-
-  const splitPdfBtn =
-    document.getElementById("splitPdfBtn");
-
-  let splitSelectedFile = null;
-
-
+if (splitBtn) {
   splitBtn.addEventListener("click", () => {
     splitFile.click();
   });
+}
 
+if (splitFile) {
+  splitFile.addEventListener("change", async () => {
 
-  splitFile.addEventListener("change", () => {
+    selectedSplitFile = splitFile.files[0];
 
-    splitSelectedFile =
-      splitFile.files[0];
-
-    if (!splitSelectedFile) return;
-
-    splitArea.hidden = false;
-
-    splitStatus.textContent =
-      `Selected: ${splitSelectedFile.name}`;
-  });
-
-
-  splitPdfBtn.addEventListener("click", async () => {
-
-    if (!splitSelectedFile) {
-      splitStatus.textContent =
-        "Please select a PDF first.";
+    if (!selectedSplitFile) {
       return;
     }
 
     try {
 
-      splitPdfBtn.disabled = true;
-      splitPdfBtn.textContent = "Processing...";
+      const buffer =
+        await selectedSplitFile.arrayBuffer();
 
+      const pdf =
+        await PDFDocument.load(buffer);
 
-      const sourceBytes =
-        await splitSelectedFile.arrayBuffer();
+      const pageCount =
+        pdf.getPageCount();
 
-      const sourcePdf =
-        await PDFDocument.load(sourceBytes);
+      splitArea.hidden = false;
+
+      splitPage.max = pageCount;
+
+      splitStatus.textContent =
+        selectedSplitFile.name +
+        " loaded. Total pages: " +
+        pageCount;
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Unable to open this PDF.");
+
+    }
+  });
+}
+
+if (splitPdfBtn) {
+  splitPdfBtn.addEventListener("click", async () => {
+
+    if (!selectedSplitFile) {
+      alert("Please select a PDF first.");
+      return;
+    }
+
+    try {
 
       const pageNumber =
-        Number(splitPage.value);
+        parseInt(splitPage.value);
+
+      const buffer =
+        await selectedSplitFile.arrayBuffer();
+
+      const sourcePdf =
+        await PDFDocument.load(buffer);
+
+      const pageCount =
+        sourcePdf.getPageCount();
 
       if (
+        isNaN(pageNumber) ||
         pageNumber < 1 ||
-        pageNumber > sourcePdf.getPageCount()
+        pageNumber > pageCount
       ) {
 
-        splitStatus.textContent =
-          `Please enter a page between 1 and ${sourcePdf.getPageCount()}.`;
+        alert(
+          "Please enter a valid page number between 1 and " +
+          pageCount
+        );
 
         return;
       }
 
+      splitPdfBtn.disabled = true;
+      splitPdfBtn.textContent = "Processing...";
 
       const newPdf =
         await PDFDocument.create();
@@ -275,83 +261,96 @@ document.addEventListener("DOMContentLoaded", () => {
 
       newPdf.addPage(page);
 
-
-      const output =
-        await newPdf.save();
-
+      const bytes =
+        await newPdf.save({
+          useObjectStreams: true
+        });
 
       downloadBytes(
-        output,
-        `split-page-${pageNumber}.pdf`
+        bytes,
+        "split-page-" + pageNumber + ".pdf"
       );
 
-
       splitStatus.textContent =
-        "✓ Page extracted. Download started.";
+        "Page " + pageNumber +
+        " extracted successfully.";
 
     } catch (error) {
 
       console.error(error);
 
-      splitStatus.textContent =
-        "❌ Could not split this PDF.";
+      alert(
+        "Unable to split this PDF."
+      );
 
     } finally {
 
       splitPdfBtn.disabled = false;
       splitPdfBtn.textContent =
         "Extract Page & Download";
+
     }
-
   });
+}
 
 
-  /* =========================================
-     COMPRESS / OPTIMIZE PDF
-  ========================================= */
+// =====================================================
+// COMPRESS PDF
+// =====================================================
 
-  const compressFile =
-    document.getElementById("compressFile");
+const compressFile =
+  document.getElementById("compressFile");
 
-  const compressBtn =
-    document.getElementById("compressBtn");
+const compressBtn =
+  document.getElementById("compressBtn");
 
-  const compressArea =
-    document.getElementById("compressArea");
+const compressArea =
+  document.getElementById("compressArea");
 
-  const compressStatus =
-    document.getElementById("compressStatus");
+const compressStatus =
+  document.getElementById("compressStatus");
 
-  const compressPdfBtn =
-    document.getElementById("compressPdfBtn");
+const compressPdfBtn =
+  document.getElementById("compressPdfBtn");
 
-  let compressSelectedFile = null;
+let selectedCompressFile = null;
 
+if (compressBtn) {
 
   compressBtn.addEventListener("click", () => {
     compressFile.click();
   });
 
+}
 
-  compressFile.addEventListener("change", () => {
+if (compressFile) {
 
-    compressSelectedFile =
+  compressFile.addEventListener("change", async () => {
+
+    selectedCompressFile =
       compressFile.files[0];
 
-    if (!compressSelectedFile) return;
+    if (!selectedCompressFile) {
+      return;
+    }
 
     compressArea.hidden = false;
 
     compressStatus.textContent =
-      `Selected: ${compressSelectedFile.name}`;
+      selectedCompressFile.name +
+      " selected. Size: " +
+      formatFileSize(selectedCompressFile.size);
+
   });
 
+}
+
+if (compressPdfBtn) {
 
   compressPdfBtn.addEventListener("click", async () => {
 
-    if (!compressSelectedFile) {
-      compressStatus.textContent =
-        "Please select a PDF first.";
+    if (!selectedCompressFile) {
+      alert("Please select a PDF first.");
       return;
     }
 
@@ -359,112 +358,97 @@ document.addEventListener("DOMContentLoaded", () => {
 
       compressPdfBtn.disabled = true;
       compressPdfBtn.textContent =
-        "Optimizing...";
+        "Compressing...";
 
-
-      const bytes =
-        await compressSelectedFile.arrayBuffer();
-
+      const buffer =
+        await selectedCompressFile.arrayBuffer();
 
       const pdf =
-        await PDFDocument.load(bytes);
+        await PDFDocument.load(buffer);
 
-
-      const output =
+      const bytes =
         await pdf.save({
           useObjectStreams: true,
           addDefaultPage: false
         });
 
-
-      const oldSize =
-        compressSelectedFile.size;
-
-      const newSize =
-        output.length;
-
-
       downloadBytes(
-        output,
+        bytes,
         "compressed-pdf.pdf"
       );
 
+      const oldSize =
+        selectedCompressFile.size;
+
+      const newSize =
+        bytes.length;
 
       compressStatus.textContent =
-        `✓ Optimization completed. Original: ${formatBytes(oldSize)}, Output: ${formatBytes(newSize)}.`;
+        "Compression completed. Original: " +
+        formatFileSize(oldSize) +
+        " → New: " +
+        formatFileSize(newSize);
 
     } catch (error) {
 
       console.error(error);
 
-      compressStatus.textContent =
-        "❌ Could not optimize this PDF.";
+      alert(
+        "Unable to compress this PDF."
+      );
 
     } finally {
 
       compressPdfBtn.disabled = false;
-
       compressPdfBtn.textContent =
         "Compress & Download";
+
     }
 
   });
 
-
-  function formatBytes(bytes) {
-
-    if (bytes === 0) return "0 Bytes";
-
-    const units =
-      ["Bytes", "KB", "MB", "GB"];
-
-    const i =
-      Math.floor(
-        Math.log(bytes) /
-        Math.log(1024)
-      );
-
-    return (
-      (bytes /
-        Math.pow(1024, i))
-        .toFixed(2) +
-      " " +
-      units[i]
-    );
-  }
+}
 
 
-  /* =========================================
-     PDF TO IMAGE
-  ========================================= */
+// =====================================================
+// PDF TO IMAGE
+// =====================================================
 
-  const pdfImageFile =
-    document.getElementById("pdfImageFile");
+const pdfImageFile =
+  document.getElementById("pdfImageFile");
 
-  const pdfImageBtn =
-    document.getElementById("pdfImageBtn");
+const pdfImageBtn =
+  document.getElementById("pdfImageBtn");
 
-  const pdfImageArea =
-    document.getElementById("pdfImageArea");
+const pdfImageArea =
+  document.getElementById("pdfImageArea");
 
-  const pdfImageStatus =
-    document.getElementById("pdfImageStatus");
+const pdfImageStatus =
+  document.getElementById("pdfImageStatus");
 
-  const imageDownloads =
-    document.getElementById("imageDownloads");
+const imageDownloads =
+  document.getElementById("imageDownloads");
 
+let selectedPdfImageFile = null;
+
+if (pdfImageBtn) {
 
   pdfImageBtn.addEventListener("click", () => {
     pdfImageFile.click();
   });
 
+}
+
+if (pdfImageFile) {
 
   pdfImageFile.addEventListener("change", async () => {
 
-    const file =
+    selectedPdfImageFile =
       pdfImageFile.files[0];
 
-    if (!file) return;
+    if (!selectedPdfImageFile) {
+      return;
+    }
 
     pdfImageArea.hidden = false;
 
@@ -473,42 +457,28 @@ document.addEventListener("DOMContentLoaded", () => {
     pdfImageStatus.textContent =
       "Loading PDF...";
 
-
     try {
 
-      const bytes =
-        await file.arrayBuffer();
+      if (typeof pdfjsLib === "undefined") {
 
-
-      /*
-       PDF.js is loaded as an ES module.
-       Use dynamic import so the page works
-       with GitHub Pages.
-      */
-
-      const pdfjsLib =
-        await import(
-          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
+        throw new Error(
+          "PDF.js library did not load."
         );
 
+      }
 
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-
-
-      const loadingTask =
-        pdfjsLib.getDocument({
-          data: bytes
-        });
-
+      const buffer =
+        await selectedPdfImageFile.arrayBuffer();
 
       const pdf =
-        await loadingTask.promise;
-
+        await pdfjsLib.getDocument({
+          data: buffer
+        }).promise;
 
       pdfImageStatus.textContent =
-        `Converting ${pdf.numPages} page(s)...`;
-
+        "Converting " +
+        pdf.numPages +
+        " page(s)...";
 
       for (
         let pageNumber = 1;
@@ -519,14 +489,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const page =
           await pdf.getPage(pageNumber);
 
-
-        const scale = 1.5;
-
         const viewport =
           page.getViewport({
-            scale
+            scale: 2
           });
-
 
         const canvas =
           document.createElement("canvas");
@@ -534,119 +500,168 @@ document.addEventListener("DOMContentLoaded", () => {
         const context =
           canvas.getContext("2d");
 
-
         canvas.width =
-          Math.floor(viewport.width);
+          viewport.width;
 
         canvas.height =
-          Math.floor(viewport.height);
-
+          viewport.height;
 
         await page.render({
           canvasContext: context,
-          viewport
+          viewport: viewport
         }).promise;
 
+        const imageUrl =
+          canvas.toDataURL("image/png");
 
-        const blob =
-          await new Promise(resolve => {
-            canvas.toBlob(
-              resolve,
-              "image/png"
-            );
-          });
+        const wrapper =
+          document.createElement("div");
 
+        wrapper.style.marginBottom =
+          "20px";
 
-        const url =
-          URL.createObjectURL(blob);
+        const title =
+          document.createElement("p");
 
+        title.textContent =
+          "Page " + pageNumber;
 
-        const link =
+        const image =
+          document.createElement("img");
+
+        image.src = imageUrl;
+
+        image.style.maxWidth = "100%";
+        image.style.border = "1px solid #ddd";
+        image.style.borderRadius = "8px";
+
+        const download =
           document.createElement("a");
 
-        link.href = url;
+        download.href = imageUrl;
 
-        link.download =
-          `page-${pageNumber}.png`;
+        download.download =
+          "page-" +
+          pageNumber +
+          ".png";
 
-        link.className =
-          "download-link";
+        download.textContent =
+          "Download Page " +
+          pageNumber;
 
-        link.textContent =
-          `Download Page ${pageNumber}`;
+        download.className =
+          "tool-btn";
 
+        download.style.display =
+          "inline-block";
 
-        imageDownloads.appendChild(link);
+        download.style.marginTop =
+          "8px";
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(image);
+        wrapper.appendChild(
+          document.createElement("br")
+        );
+        wrapper.appendChild(download);
+
+        imageDownloads.appendChild(
+          wrapper
+        );
+
+        pdfImageStatus.textContent =
+          "Converted " +
+          pageNumber +
+          " of " +
+          pdf.numPages +
+          " page(s).";
       }
 
-
       pdfImageStatus.textContent =
-        "✓ Conversion completed. Download the pages below.";
+        "PDF converted successfully!";
 
     } catch (error) {
 
       console.error(error);
 
       pdfImageStatus.textContent =
-        "❌ Could not convert this PDF.";
+        "Conversion failed.";
+
+      alert(
+        "Unable to convert this PDF to images."
+      );
 
     }
 
   });
 
-
-  /* =========================================
-     IMAGE TO PDF
-  ========================================= */
-
-  const imagePdfFiles =
-    document.getElementById("imagePdfFiles");
-
-  const imagePdfBtn =
-    document.getElementById("imagePdfBtn");
-
-  const imagePdfArea =
-    document.getElementById("imagePdfArea");
-
-  const imagePdfStatus =
-    document.getElementById("imagePdfStatus");
-
-  const createImagePdfBtn =
-    document.getElementById("createImagePdfBtn");
+}
 
 
-  let imageFiles = [];
+// =====================================================
+// IMAGE TO PDF
+// =====================================================
 
+const imagePdfFiles =
+  document.getElementById("imagePdfFiles");
+
+const imagePdfBtn =
+  document.getElementById("imagePdfBtn");
+
+const imagePdfArea =
+  document.getElementById("imagePdfArea");
+
+const imagePdfStatus =
+  document.getElementById("imagePdfStatus");
+
+const createImagePdfBtn =
+  document.getElementById("createImagePdfBtn");
+
+let selectedImages = [];
+
+if (imagePdfBtn) {
 
   imagePdfBtn.addEventListener("click", () => {
     imagePdfFiles.click();
   });
 
+}
+
+if (imagePdfFiles) {
 
   imagePdfFiles.addEventListener("change", () => {
 
-    imageFiles =
+    selectedImages =
       Array.from(imagePdfFiles.files);
 
-    if (!imageFiles.length) return;
+    if (selectedImages.length === 0) {
+      return;
+    }
 
     imagePdfArea.hidden = false;
 
     imagePdfStatus.textContent =
-      `${imageFiles.length} image(s) selected.`;
+      selectedImages.length +
+      " image(s) selected.";
+
   });
 
+}
+
+if (createImagePdfBtn) {
 
   createImagePdfBtn.addEventListener(
     "click",
     async () => {
 
-      if (!imageFiles.length) {
-        imagePdfStatus.textContent =
-          "Please select images first.";
+      if (selectedImages.length === 0) {
+
+        alert(
+          "Please select at least one image."
+        );
+
         return;
       }
-
 
       try {
 
@@ -655,23 +670,29 @@ document.addEventListener("DOMContentLoaded", () => {
         createImagePdfBtn.textContent =
           "Creating PDF...";
 
-
         const pdf =
           await PDFDocument.create();
 
-
-        for (const file of imageFiles) {
+        for (const file of selectedImages) {
 
           const bytes =
             await file.arrayBuffer();
 
-
           let image;
 
+          const type =
+            file.type.toLowerCase();
 
           if (
-            file.type === "image/png" ||
-            file.name.toLowerCase().endsWith(".png")
+            type === "image/jpeg" ||
+            type === "image/jpg"
+          ) {
+
+            image =
+              await pdf.embedJpg(bytes);
+
+          } else if (
+            type === "image/png"
           ) {
 
             image =
@@ -679,67 +700,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
           } else {
 
-            image =
-              await pdf.embedJpg(bytes);
+            continue;
+
           }
 
-
-          const width =
+          const imageWidth =
             image.width;
 
-          const height =
+          const imageHeight =
             image.height;
-
-
-          const maxWidth = 595;
-
-          const maxHeight = 842;
-
-
-          const scale =
-            Math.min(
-              maxWidth / width,
-              maxHeight / height,
-              1
-            );
-
 
           const page =
             pdf.addPage([
-              width * scale,
-              height * scale
+              imageWidth,
+              imageHeight
             ]);
-
 
           page.drawImage(image, {
             x: 0,
             y: 0,
-            width: width * scale,
-            height: height * scale
+            width: imageWidth,
+            height: imageHeight
           });
 
         }
 
-
-        const output =
-          await pdf.save();
-
+        const bytes =
+          await pdf.save({
+            useObjectStreams: true
+          });
 
         downloadBytes(
-          output,
+          bytes,
           "images-to-pdf.pdf"
         );
 
-
         imagePdfStatus.textContent =
-          "✓ PDF created successfully. Download started.";
+          "PDF created successfully!";
 
       } catch (error) {
 
         console.error(error);
 
-        imagePdfStatus.textContent =
-          "❌ Could not create PDF. Please use JPG or PNG images.";
+        alert(
+          "Unable to create PDF from images."
+        );
 
       } finally {
 
@@ -747,128 +752,214 @@ document.addEventListener("DOMContentLoaded", () => {
 
         createImagePdfBtn.textContent =
           "Create & Download PDF";
+
       }
 
     }
   );
 
-
-  /* =========================================
-     ROTATE PDF
-  ========================================= */
-
-  const rotateFile =
-    document.getElementById("rotateFile");
-
-  const rotateBtn =
-    document.getElementById("rotateBtn");
-
-  const rotateArea =
-    document.getElementById("rotateArea");
-
-  const rotateStatus =
-    document.getElementById("rotateStatus");
-
-  const rotationAmount =
-    document.getElementById("rotationAmount");
-
-  const rotatePdfBtn =
-    document.getElementById("rotatePdfBtn");
+}
 
 
-  let rotateSelectedFile = null;
+// =====================================================
+// ROTATE PDF
+// =====================================================
 
+const rotateFile =
+  document.getElementById("rotateFile");
+
+const rotateBtn =
+  document.getElementById("rotateBtn");
+
+const rotateArea =
+  document.getElementById("rotateArea");
+
+const rotationAmount =
+  document.getElementById("rotationAmount");
+
+const rotateStatus =
+  document.getElementById("rotateStatus");
+
+const rotatePdfBtn =
+  document.getElementById("rotatePdfBtn");
+
+let selectedRotateFile = null;
+
+if (rotateBtn) {
 
   rotateBtn.addEventListener("click", () => {
     rotateFile.click();
   });
 
+}
 
-  rotateFile.addEventListener("change", () => {
+if (rotateFile) {
 
-    rotateSelectedFile =
+  rotateFile.addEventListener("change", async () => {
+
+    selectedRotateFile =
       rotateFile.files[0];
 
-    if (!rotateSelectedFile) return;
-
-    rotateArea.hidden = false;
-
-    rotateStatus.textContent =
-      `Selected: ${rotateSelectedFile.name}`;
-  });
-
-
-  rotatePdfBtn.addEventListener("click", async () => {
-
-    if (!rotateSelectedFile) {
-      rotateStatus.textContent =
-        "Please select a PDF first.";
+    if (!selectedRotateFile) {
       return;
     }
 
-
     try {
 
-      rotatePdfBtn.disabled = true;
-
-      rotatePdfBtn.textContent =
-        "Rotating...";
-
-
-      const bytes =
-        await rotateSelectedFile.arrayBuffer();
-
+      const buffer =
+        await selectedRotateFile.arrayBuffer();
 
       const pdf =
-        await PDFDocument.load(bytes);
+        await PDFDocument.load(buffer);
 
-
-      const angle =
-        Number(rotationAmount.value);
-
-
-      pdf.getPages().forEach(page => {
-
-        const current =
-          page.getRotation().angle;
-
-        page.setRotation(
-          degrees(
-            (current + angle) % 360
-          )
-        );
-
-      });
-
-
-      const output =
-        await pdf.save();
-
-
-      downloadBytes(
-        output,
-        "rotated-pdf.pdf"
-      );
-
+      rotateArea.hidden = false;
 
       rotateStatus.textContent =
-        "✓ PDF rotated successfully. Download started.";
+        selectedRotateFile.name +
+        " loaded. Pages: " +
+        pdf.getPageCount();
 
     } catch (error) {
 
       console.error(error);
 
-      rotateStatus.textContent =
-        "❌ Could not rotate this PDF.";
+      alert(
+        "Unable to open this PDF."
+      );
 
-    } finally {
-
-      rotatePdfBtn.disabled = false;
-
-      rotatePdfBtn.textContent =
-        "Rotate & Download";
     }
 
   });
 
-});
+}
+
+if (rotatePdfBtn) {
+
+  rotatePdfBtn.addEventListener(
+    "click",
+    async () => {
+
+      if (!selectedRotateFile) {
+
+        alert(
+          "Please select a PDF first."
+        );
+
+        return;
+      }
+
+      try {
+
+        rotatePdfBtn.disabled = true;
+
+        rotatePdfBtn.textContent =
+          "Rotating...";
+
+        const buffer =
+          await selectedRotateFile.arrayBuffer();
+
+        const pdf =
+          await PDFDocument.load(buffer);
+
+        const rotation =
+          parseInt(
+            rotationAmount.value
+          );
+
+        const pages =
+          pdf.getPages();
+
+        pages.forEach(page => {
+
+          const currentRotation =
+            page.getRotation().angle;
+
+          page.setRotation(
+            degrees(
+              currentRotation +
+              rotation
+            )
+          );
+
+        });
+
+        const bytes =
+          await pdf.save({
+            useObjectStreams: true
+          });
+
+        downloadBytes(
+          bytes,
+          "rotated-pdf.pdf"
+        );
+
+        rotateStatus.textContent =
+          "PDF rotated successfully!";
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Unable to rotate this PDF."
+        );
+
+      } finally {
+
+        rotatePdfBtn.disabled = false;
+
+        rotatePdfBtn.textContent =
+          "Rotate & Download";
+
+      }
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// FILE SIZE HELPER
+// =====================================================
+
+function formatFileSize(bytes) {
+
+  if (bytes === 0) {
+    return "0 Bytes";
+  }
+
+  const units = [
+    "Bytes",
+    "KB",
+    "MB",
+    "GB"
+  ];
+
+  const index =
+    Math.floor(
+      Math.log(bytes) /
+      Math.log(1024)
+    );
+
+  return (
+    parseFloat(
+      (
+        bytes /
+        Math.pow(1024, index)
+      ).toFixed(2)
+    ) +
+    " " +
+    units[index]
+  );
+
+}
+
+
+// =====================================================
+// PAGE READY
+// =====================================================
+
+console.log(
+  "PDFTools loaded successfully."
+);
