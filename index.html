@@ -2,630 +2,402 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="description" content="PDFTools - Free PDF and image tools online. Merge, split, compress, convert and manage your files easily.">
 
-  <meta
-    name="description"
-    content="PDFTools - Free PDF and image tools online. Merge, split, compress, convert and manage your files easily."
-  >
-
-  <meta
-    name="google-adsense-account"
-    content="ca-pub-2447771471316023"
-  >
+  <meta name="google-adsense-account" content="ca-pub-2447771471316023">
 
   <title>PDFTools - Free PDF & Image Tools</title>
 
   <link rel="stylesheet" href="style.css">
 
   <!-- Google AdSense -->
-  <script
-    async
+  <script async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2447771471316023"
-    crossorigin="anonymous">
-  </script>
+    crossorigin="anonymous"></script>
 </head>
 
 <body>
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+<header class="header">
+  <div class="container nav">
+    <a class="logo" href="#home">PDF<span>Tools</span></a>
 
-  <header class="header">
+    <nav>
+      <a href="#tools">Tools</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
 
-    <div class="container nav">
+<main id="home">
 
-      <a class="logo" href="#home">
-        PDF<span>Tools</span>
-      </a>
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">SIMPLE • FAST • FREE</p>
 
-      <nav>
+    <h1>
+      All your PDF tools
+      <br>
+      <span>in one place.</span>
+    </h1>
 
-        <a href="#tools">Tools</a>
+    <p class="hero-text">
+      Merge, split, compress, convert and manage PDF files with PDFTools.
+    </p>
 
-        <a href="#about">About</a>
+    <div class="hero-actions">
+      <a class="btn primary" href="#tools">Explore PDF Tools</a>
+      <a class="btn secondary" href="#download">Download Android App</a>
+    </div>
+  </div>
+</section>
 
-        <a href="#contact">Contact</a>
 
-        <a href="#faq">FAQ</a>
+<section id="tools" class="section">
+  <div class="container">
 
-      </nav>
-
+    <div class="section-heading">
+      <p class="eyebrow">PDFTOOLS</p>
+      <h2>Popular tools</h2>
+      <p>Choose a tool to get started.</p>
     </div>
 
-  </header>
+    <div class="tool-grid">
 
 
-  <!-- =========================
-       MAIN
-  ========================== -->
+      <!-- MERGE PDF -->
+      <article class="tool-card">
+        <div class="icon">⇄</div>
+        <h3>Merge PDF</h3>
+        <p>Combine multiple PDF files into one document.</p>
 
-  <main id="home">
+        <input
+          type="file"
+          id="mergeFiles"
+          accept=".pdf,application/pdf"
+          multiple
+          hidden>
 
+        <button class="tool-btn" id="mergeBtn">
+          Select PDF Files
+        </button>
 
-    <!-- =========================
-         HERO
-    ========================== -->
+        <div id="mergeArea" class="tool-area" hidden>
+          <p id="mergeStatus">No files selected.</p>
+          <div id="mergeFileList"></div>
 
-    <section class="hero">
-
-      <div class="container">
-
-        <p class="eyebrow">
-          SIMPLE • FAST • FREE
-        </p>
-
-        <h1>
-          All your PDF tools
-          <br>
-          <span>in one place.</span>
-        </h1>
-
-        <p class="hero-text">
-          Merge, split, compress, convert and manage
-          PDF files with PDFTools.
-        </p>
-
-        <div class="hero-actions">
-
-          <a
-            class="btn primary"
-            href="#tools">
-            Explore PDF Tools
-          </a>
-
-          <a
-            class="btn secondary"
-            href="#download">
-            Download Android App
-          </a>
-
+          <button class="tool-btn action-btn" id="mergePdfBtn">
+            Merge & Download PDF
+          </button>
         </div>
-
-      </div>
-
-    </section>
+      </article>
 
 
-    <!-- =========================
-         TOOLS
-    ========================== -->
+      <!-- SPLIT PDF -->
+      <article class="tool-card">
+        <div class="icon">✂</div>
+        <h3>Split PDF</h3>
+        <p>Extract selected pages from a PDF into separate PDF files.</p>
 
-    <section
-      id="tools"
-      class="section">
+        <input
+          type="file"
+          id="splitFile"
+          accept=".pdf,application/pdf"
+          hidden>
 
-      <div class="container">
+        <button class="tool-btn" id="splitBtn">
+          Select PDF
+        </button>
 
-        <div class="section-heading">
+        <div id="splitArea" class="tool-area" hidden>
+          <p id="splitStatus"></p>
 
-          <p class="eyebrow">
-            PDFTOOLS
-          </p>
-
-          <h2>
-            Popular tools
-          </h2>
-
-          <p>
-            Choose a tool to get started.
-          </p>
-
-        </div>
-
-
-        <div class="tool-grid">
-
-
-          <!-- MERGE PDF -->
-
-          <article class="tool-card">
-
-            <div class="icon">
-              ⇄
-            </div>
-
-            <h3>
-              Merge PDF
-            </h3>
-
-            <p>
-              Combine multiple PDF files into one document.
-            </p>
-
+          <label>
+            Page number:
             <input
-              type="file"
-              id="mergeFiles"
-              accept="application/pdf,.pdf"
-              multiple
-              hidden
-            >
+              type="number"
+              id="splitPage"
+              min="1"
+              value="1">
+          </label>
 
-            <button
-              class="tool-btn"
-              id="mergeBtn"
-              type="button">
-
-              Select PDF Files
-
-            </button>
+          <button class="tool-btn action-btn" id="splitPdfBtn">
+            Extract Page & Download
+          </button>
+        </div>
+      </article>
 
 
-            <div
-              id="mergeArea"
-              class="merge-area"
-              style="display:none;">
+      <!-- COMPRESS PDF -->
+      <article class="tool-card">
+        <div class="icon">↓</div>
+        <h3>Compress PDF</h3>
+        <p>Optimize a PDF and download a smaller optimized copy.</p>
 
-              <p id="mergeStatus">
-                No files selected.
-              </p>
+        <input
+          type="file"
+          id="compressFile"
+          accept=".pdf,application/pdf"
+          hidden>
 
-              <div id="mergeFileList"></div>
+        <button class="tool-btn" id="compressBtn">
+          Select PDF
+        </button>
 
-              <button
-                class="tool-btn merge-action"
-                id="mergePdfBtn"
-                type="button">
+        <div id="compressArea" class="tool-area" hidden>
+          <p id="compressStatus"></p>
 
-                Merge & Download PDF
-
-              </button>
-
-            </div>
-
-          </article>
-
-
-          <!-- SPLIT PDF -->
-
-          <article class="tool-card">
-
-            <div class="icon">
-              ✂
-            </div>
-
-            <h3>
-              Split PDF
-            </h3>
-
-            <p>
-              Split a PDF into separate files or selected pages.
-            </p>
-
-            <button
-              class="tool-btn coming-soon"
-              type="button"
-              data-tool="Split PDF">
-
-              Coming soon
-
-            </button>
-
-          </article>
+          <button class="tool-btn action-btn" id="compressPdfBtn">
+            Compress & Download
+          </button>
+        </div>
+      </article>
 
 
-          <!-- COMPRESS PDF -->
+      <!-- PDF TO IMAGE -->
+      <article class="tool-card">
+        <div class="icon">▣</div>
+        <h3>PDF to Image</h3>
+        <p>Convert PDF pages into PNG images.</p>
 
-          <article class="tool-card">
+        <input
+          type="file"
+          id="pdfImageFile"
+          accept=".pdf,application/pdf"
+          hidden>
 
-            <div class="icon">
-              ↓
-            </div>
+        <button class="tool-btn" id="pdfImageBtn">
+          Select PDF
+        </button>
 
-            <h3>
-              Compress PDF
-            </h3>
-
-            <p>
-              Reduce PDF file size while keeping useful quality.
-            </p>
-
-            <button
-              class="tool-btn coming-soon"
-              type="button"
-              data-tool="Compress PDF">
-
-              Coming soon
-
-            </button>
-
-          </article>
+        <div id="pdfImageArea" class="tool-area" hidden>
+          <p id="pdfImageStatus"></p>
+          <div id="imageDownloads"></div>
+        </div>
+      </article>
 
 
-          <!-- PDF TO IMAGE -->
+      <!-- IMAGE TO PDF -->
+      <article class="tool-card">
+        <div class="icon">▤</div>
+        <h3>Image to PDF</h3>
+        <p>Convert JPG and PNG images into one PDF.</p>
 
-          <article class="tool-card">
+        <input
+          type="file"
+          id="imagePdfFiles"
+          accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+          multiple
+          hidden>
 
-            <div class="icon">
-              ▣
-            </div>
+        <button class="tool-btn" id="imagePdfBtn">
+          Select Images
+        </button>
 
-            <h3>
-              PDF to Image
-            </h3>
+        <div id="imagePdfArea" class="tool-area" hidden>
+          <p id="imagePdfStatus"></p>
 
-            <p>
-              Convert PDF pages into image files.
-            </p>
-
-            <button
-              class="tool-btn coming-soon"
-              type="button"
-              data-tool="PDF to Image">
-
-              Coming soon
-
-            </button>
-
-          </article>
-
-
-          <!-- IMAGE TO PDF -->
-
-          <article class="tool-card">
-
-            <div class="icon">
-              ▤
-            </div>
-
-            <h3>
-              Image to PDF
-            </h3>
-
-            <p>
-              Create a PDF document from your images.
-            </p>
-
-            <button
-              class="tool-btn coming-soon"
-              type="button"
-              data-tool="Image to PDF">
-
-              Coming soon
-
-            </button>
-
-          </article>
+          <button class="tool-btn action-btn" id="createImagePdfBtn">
+            Create & Download PDF
+          </button>
+        </div>
+      </article>
 
 
-          <!-- ROTATE PDF -->
+      <!-- ROTATE PDF -->
+      <article class="tool-card">
+        <div class="icon">↻</div>
+        <h3>Rotate PDF</h3>
+        <p>Rotate all PDF pages and download the updated PDF.</p>
 
-          <article class="tool-card">
+        <input
+          type="file"
+          id="rotateFile"
+          accept=".pdf,application/pdf"
+          hidden>
 
-            <div class="icon">
-              ↻
-            </div>
+        <button class="tool-btn" id="rotateBtn">
+          Select PDF
+        </button>
 
-            <h3>
-              Rotate PDF
-            </h3>
+        <div id="rotateArea" class="tool-area" hidden>
 
-            <p>
-              Rotate PDF pages and save the updated document.
-            </p>
+          <label>
+            Rotation:
+            <select id="rotationAmount">
+              <option value="90">90°</option>
+              <option value="180">180°</option>
+              <option value="270">270°</option>
+            </select>
+          </label>
 
-            <button
-              class="tool-btn coming-soon"
-              type="button"
-              data-tool="Rotate PDF">
+          <p id="rotateStatus"></p>
 
-              Coming soon
-
-            </button>
-
-          </article>
-
+          <button class="tool-btn action-btn" id="rotatePdfBtn">
+            Rotate & Download
+          </button>
 
         </div>
+      </article>
 
-      </div>
+    </div>
+  </div>
+</section>
 
-    </section>
 
+<section id="download" class="download-section">
+  <div class="container download-box">
 
-    <!-- =========================
-         DOWNLOAD APP
-    ========================== -->
-
-    <section
-      id="download"
-      class="download-section">
-
-      <div class="container download-box">
-
-        <div>
-
-          <p class="eyebrow">
-            ANDROID APP
-          </p>
-
-          <h2>
-            PDFTools on Android
-          </h2>
-
-          <p>
-            Download the PDFTools Android app and use
-            your PDF utilities on the go.
-          </p>
-
-        </div>
-
-        <a
-          class="btn primary"
-          href="app-release.apk"
-          download>
-
-          Download APK
-
-        </a>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         ABOUT
-    ========================== -->
-
-    <section
-      id="about"
-      class="section light">
-
-      <div class="container narrow">
-
-        <div class="section-heading left">
-
-          <p class="eyebrow">
-            ABOUT
-          </p>
-
-          <h2>
-            Built for everyday PDF tasks
-          </h2>
-
-          <p>
-            PDFTools is designed to make common PDF
-            and image tasks simple, fast and accessible.
-          </p>
-
-          <p>
-            Our goal is to provide useful online PDF
-            utilities without complicated software.
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         FAQ
-    ========================== -->
-
-    <section
-      id="faq"
-      class="section">
-
-      <div class="container narrow">
-
-        <div class="section-heading">
-
-          <p class="eyebrow">
-            FAQ
-          </p>
-
-          <h2>
-            Frequently Asked Questions
-          </h2>
-
-        </div>
-
-
-        <div class="faq-list">
-
-
-          <details>
-
-            <summary>
-              Is PDFTools free?
-            </summary>
-
-            <p>
-              Yes. PDFTools is designed to provide
-              useful PDF and image utilities for free.
-            </p>
-
-          </details>
-
-
-          <details>
-
-            <summary>
-              Is my PDF uploaded to a server?
-            </summary>
-
-            <p>
-              The Merge PDF tool processes selected
-              PDF files directly in your browser.
-            </p>
-
-          </details>
-
-
-          <details>
-
-            <summary>
-              How do I merge PDF files?
-            </summary>
-
-            <p>
-              Open Merge PDF, select two or more PDF
-              files, then click Merge & Download PDF.
-            </p>
-
-          </details>
-
-
-          <details>
-
-            <summary>
-              Do you have an Android app?
-            </summary>
-
-            <p>
-              Yes. You can download the PDFTools Android
-              app from the Download section when available.
-            </p>
-
-          </details>
-
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         CONTACT
-    ========================== -->
-
-    <section
-      id="contact"
-      class="section light">
-
-      <div class="container narrow">
-
-        <div class="section-heading left">
-
-          <p class="eyebrow">
-            CONTACT
-          </p>
-
-          <h2>
-            Get in touch
-          </h2>
-
-          <p>
-            Have a question or suggestion?
-          </p>
-
-          <p>
-            Email:
-            <a href="mailto:kevinkahar1504@gmail.com">
-              kevinkahar1504@gmail.com
-            </a>
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         LEGAL
-    ========================== -->
-
-    <section class="legal section">
-
-      <div class="container legal-grid">
-
-        <a href="privacy.html">
-          Privacy Policy
-        </a>
-
-        <a href="terms.html">
-          Terms of Service
-        </a>
-
-        <a href="disclaimer.html">
-          Disclaimer
-        </a>
-
-      </div>
-
-    </section>
-
-
-  </main>
-
-
-  <!-- =========================
-       FOOTER
-  ========================== -->
-
-  <footer>
-
-    <div class="container footer">
+    <div>
+      <p class="eyebrow">ANDROID APP</p>
+      <h2>PDFTools on Android</h2>
 
       <p>
-        © 2026 PDFTools. All rights reserved.
+        Download the PDFTools Android app and use your PDF utilities on the go.
       </p>
-
-      <div>
-
-        <a href="privacy.html">
-          Privacy
-        </a>
-
-        ·
-
-        <a href="terms.html">
-          Terms
-        </a>
-
-        ·
-
-        <a href="disclaimer.html">
-          Disclaimer
-        </a>
-
-      </div>
-
     </div>
 
-  </footer>
+    <a class="btn primary" href="app-release.apk" download>
+      Download APK
+    </a>
+
+  </div>
+</section>
 
 
-  <!-- PDF-LIB -->
-  <script
-    src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js">
-  </script>
+<section id="about" class="section light">
+  <div class="container narrow">
+
+    <div class="section-heading left">
+      <p class="eyebrow">ABOUT</p>
+
+      <h2>Built for everyday PDF tasks</h2>
+
+      <p>
+        PDFTools is designed to make common PDF and image tasks simple,
+        fast and accessible.
+      </p>
+
+      <p>
+        Our browser-based tools are designed to process many files
+        directly on your device.
+      </p>
+    </div>
+
+  </div>
+</section>
 
 
-  <!-- Your JavaScript -->
-  <script src="script.js"></script>
+<section id="faq" class="section">
+  <div class="container narrow">
+
+    <div class="section-heading">
+      <p class="eyebrow">FAQ</p>
+      <h2>Frequently Asked Questions</h2>
+    </div>
+
+    <div class="faq-list">
+
+      <details>
+        <summary>Is PDFTools free?</summary>
+        <p>
+          Yes. PDFTools is designed to provide useful PDF and image utilities
+          for free.
+        </p>
+      </details>
+
+      <details>
+        <summary>How do I merge PDF files?</summary>
+        <p>
+          Select two or more PDF files in Merge PDF and click
+          Merge & Download PDF.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I convert PDF pages to images?</summary>
+        <p>
+          Yes. PDF to Image converts PDF pages into PNG images.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I create PDF from images?</summary>
+        <p>
+          Yes. Image to PDF supports JPG and PNG images.
+        </p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+
+<section id="contact" class="section light">
+  <div class="container narrow">
+
+    <div class="section-heading left">
+      <p class="eyebrow">CONTACT</p>
+
+      <h2>Get in touch</h2>
+
+      <p>
+        Have a question or suggestion?
+      </p>
+
+      <p>
+        Email:
+        <a href="mailto:kevinkahar1504@gmail.com">
+          kevinkahar1504@gmail.com
+        </a>
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<section class="legal section">
+  <div class="container legal-grid">
+
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="disclaimer.html">Disclaimer</a>
+
+  </div>
+</section>
+
+</main>
+
+
+<footer>
+  <div class="container footer">
+
+    <p>© 2026 PDFTools. All rights reserved.</p>
+
+    <div>
+      <a href="privacy.html">Privacy</a>
+      ·
+      <a href="terms.html">Terms</a>
+      ·
+      <a href="disclaimer.html">Disclaimer</a>
+    </div>
+
+  </div>
+</footer>
+
+
+<!-- PDF-LIB -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<!-- PDF.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+
+<script src="script.js"></script>
 
 </body>
 </html>
